@@ -1,0 +1,180 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #FAF6EE;
+  --foreground: #1E1B24;
+  --beige-50: #FAF6EE;
+  --beige-200: #F2EBE0;
+  --beige-400: #E3D5BC;
+  --lavender-200: #E3D9F7;
+  --lavender-400: #C9B8EC;
+  --lavender-600: #9C7FDB;
+  --blue-300: #A9BFF2;
+  --blue-500: #7B93E8;
+  --blue-700: #4A63C9;
+  --ink-900: #1E1B24;
+  --ink-600: #5C5868;
+  --glass-white: rgba(255, 255, 255, 0.55);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-body), sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, .display {
+  font-family: var(--font-display), sans-serif;
+  color: var(--ink-900);
+}
+
+.eyebrow, .stat-number, .label {
+  font-family: var(--font-mono), monospace;
+}
+
+/* Glassmorphism Styles */
+.glass-card {
+  background: var(--glass-white);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 20px 60px -20px rgba(80, 60, 120, 0.25);
+}
+
+.glass-navbar {
+  background: rgba(250, 246, 238, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(227, 213, 188, 0.4);
+}
+
+/* Signature Background mesh styles */
+.gradient-mesh-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -50;
+  overflow: hidden;
+  pointer-events: none;
+  background: #FAF6EE;
+}
+
+.gradient-mesh-bg {
+  position: absolute;
+  top: -20%;
+  left: -20%;
+  width: 140%;
+  height: 140%;
+  background:
+    radial-gradient(ellipse 70% 60% at 20% 15%, #C9B8EC 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 85% 10%, #A9BFF2 0%, transparent 55%),
+    radial-gradient(ellipse 65% 55% at 75% 85%, #F2EBE0 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 10% 90%, #E3D9F7 0%, transparent 60%),
+    #FAF6EE;
+  filter: blur(60px);
+  transform-origin: center center;
+  animation: mesh-drift 80s ease-in-out infinite alternate;
+}
+
+@keyframes mesh-drift {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  25% {
+    transform: translate(30px, -20px) scale(1.04);
+  }
+  50% {
+    transform: translate(-15px, 30px) scale(1.02);
+  }
+  75% {
+    transform: translate(25px, 20px) scale(1.05);
+  }
+  100% {
+    transform: translate(-20px, -15px) scale(1.01);
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--beige-50);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--beige-400);
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--lavender-400);
+}
+
+/* Hide scrollbar for elements */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.grid-pattern {
+  background-image: radial-gradient(rgba(156, 127, 219, 0.07) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+@keyframes floatSlow {
+  0% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-30px) scale(1.05); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+@keyframes floatSlowReverse {
+  0% { transform: translateY(0) scale(1.05); }
+  50% { transform: translateY(30px) scale(1); }
+  100% { transform: translateY(0) scale(1.05); }
+}
+
+.animate-floatSlow {
+  animation: floatSlow 20s ease-in-out infinite;
+}
+
+.animate-floatSlowReverse {
+  animation: floatSlowReverse 22s ease-in-out infinite;
+}
+
+@keyframes gentleFloat {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(1deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+@keyframes gentleFloatReverse {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(15px) rotate(-1.2deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+.animate-gentleFloat {
+  animation: gentleFloat 12s ease-in-out infinite;
+}
+
+.animate-gentleFloatReverse {
+  animation: gentleFloatReverse 14s ease-in-out infinite;
+}
+
