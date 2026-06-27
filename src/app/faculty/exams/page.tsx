@@ -27,8 +27,10 @@ export default function ExamsPage() {
 
   // Test Case Modal states
   const [showTestCasesModal, setShowTestCasesModal] = useState(false);
-  const [testCases, setTestCases] = useState<{ input: string; output: string }[]>([
-    { input: '5\n10 20 30 40 50', output: '150' }
+  const [selectedQIdx, setSelectedQIdx] = useState<number>(0);
+  const [testCases, setTestCases] = useState<{ qIdx: number; input: string; output: string }[]>([
+    { qIdx: 0, input: '3\n1 2 3', output: '6' },
+    { qIdx: 1, input: '5\n10 20 30 40 50', output: '150' }
   ]);
   const [newIn, setNewIn] = useState('');
   const [newOut, setNewOut] = useState('');
@@ -41,7 +43,7 @@ export default function ExamsPage() {
 
   const handleAddTestCase = () => {
     if (!newIn.trim() || !newOut.trim()) return;
-    setTestCases(prev => [...prev, { input: newIn, output: newOut }]);
+    setTestCases(prev => [...prev, { qIdx: selectedQIdx, input: newIn, output: newOut }]);
     setNewIn('');
     setNewOut('');
   };
@@ -56,7 +58,7 @@ export default function ExamsPage() {
       examType: selectedType,
       scheduleDate: schedDate,
       duration: schedDuration,
-      testCases
+      testCases: testCases.map(tc => ({ input: tc.input, output: tc.output }))
     });
   };
 
@@ -232,7 +234,7 @@ export default function ExamsPage() {
                           <p className="text-[11.5px] font-semibold truncate max-w-[80px]">{st.name}</p>
                           {st.violationsCount > 0 && (
                             <span className="text-[9.5px] font-mono font-bold text-amber-600 dark:text-amber-400">
-                              {st.violationsCount} Flags
+                              {st.violationsCount} {st.violationsCount === 1 ? 'Flag' : 'Flags'}
                             </span>
                           )}
                         </div>
@@ -353,10 +355,10 @@ export default function ExamsPage() {
                   </p>
                 </div>
                 <Link
-                  href="/faculty/evaluation"
-                  className="px-4 py-2 rounded-xl bg-white/60 dark:bg-white/10 border border-[#E3D5BC]/40 dark:border-white/5 hover:bg-[#4A63C9] hover:text-white text-[12px] font-semibold transition-all flex items-center gap-1.5"
+                  href={`/faculty/evaluation?examId=${ex.id}`}
+                  className="px-3.5 py-1.5 rounded-lg bg-white/70 dark:bg-white/5 border border-[#E3D5BC]/45 text-[11.5px] font-bold text-[#4A63C9] hover:bg-[#E3D9F7] transition-all"
                 >
-                  <span>View Submissions</span>
+                  View Submissions
                 </Link>
               </div>
             ))}
@@ -380,19 +382,39 @@ export default function ExamsPage() {
               </button>
             </div>
 
+            {/* Question Selector dropdown */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-mono uppercase tracking-wider text-[#5C5868]/70 dark:text-[#9591A3]/50">Target Question</label>
+              <select
+                value={selectedQIdx}
+                onChange={(e) => setSelectedQIdx(Number(e.target.value))}
+                className="w-full bg-white/50 dark:bg-[#1D1A24]/40 border border-[#E3D5BC]/55 dark:border-white/5 rounded-xl px-2.5 py-2 text-[12px] text-[#1E1B24] dark:text-[#EDEAF2]"
+              >
+                <option value={0}>Q1: Implement double-ended queue using arrays</option>
+                <option value={1}>Q2: Reverse a singly linked list in-place</option>
+                <option value={2}>Q3: Check if a binary tree is BST</option>
+              </select>
+            </div>
+
             {/* List */}
             <div className="space-y-2 max-h-40 overflow-y-auto no-scrollbar font-mono text-[11px]">
-              {testCases.map((tc, idx) => (
-                <div key={idx} className="p-3 rounded-lg border border-[#E3D5BC]/30 dark:border-white/5 bg-white/20 flex justify-between gap-3 items-center">
-                  <div className="truncate">
-                    <p className="text-emerald-600 font-bold">In: {tc.input}</p>
-                    <p className="text-[#4A63C9] font-bold">Out: {tc.output}</p>
+              {testCases.map((tc, idx) => {
+                if (tc.qIdx !== selectedQIdx) return null;
+                return (
+                  <div key={idx} className="p-3 rounded-lg border border-[#E3D5BC]/30 dark:border-white/5 bg-white/20 flex justify-between gap-3 items-center">
+                    <div className="truncate">
+                      <p className="text-emerald-600 font-bold">In: {tc.input}</p>
+                      <p className="text-[#4A63C9] font-bold">Out: {tc.output}</p>
+                    </div>
+                    <button type="button" onClick={() => handleDeleteTestCase(idx)} className="p-1 rounded text-[#C1493D] hover:bg-[#FBE4E1] shrink-0">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
-                  <button onClick={() => handleDeleteTestCase(idx)} className="p-1 rounded text-[#C1493D] hover:bg-[#FBE4E1] shrink-0">
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              ))}
+                );
+              })}
+              {testCases.filter(tc => tc.qIdx === selectedQIdx).length === 0 && (
+                <p className="text-center py-4 text-[#5C5868]/60 text-[11px] border border-dashed border-[#E3D5BC]/30 rounded-xl">No test cases defined for this question.</p>
+              )}
             </div>
 
             {/* Add form */}

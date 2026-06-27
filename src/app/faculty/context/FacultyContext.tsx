@@ -37,6 +37,7 @@ export interface Assignment {
   submittedCount: number;
   totalCount: number;
   status: 'Active' | 'Closed';
+  type?: 'Assignment' | 'Project';
   submissions: {
     studentName: string;
     rollNumber: string;
@@ -111,13 +112,16 @@ interface FacultyContextType {
   updateProfile: (p: Partial<FacultyProfile>) => void;
   avatarIndex: number;
   setAvatarIndex: (i: number) => void;
+  semester: 'Sem 1' | 'Sem 3' | 'Sem 5' | 'Sem 7';
+  setSemester: (sem: 'Sem 1' | 'Sem 3' | 'Sem 5' | 'Sem 7') => void;
   classes: ClassSection[];
   assignments: Assignment[];
-  addAssignment: (assign: Omit<Assignment, 'id' | 'submittedCount' | 'totalCount' | 'submissions'>) => void;
+  addAssignment: (assign: Omit<Assignment, 'id' | 'submittedCount' | 'totalCount' | 'submissions'> & { type?: 'Assignment' | 'Project' }) => void;
   gradeSubmission: (assignId: string, rollNumber: string, marks: number, feedback: string) => void;
   materials: StudyMaterial[];
   uploadMaterial: (mat: Omit<StudyMaterial, 'id' | 'uploadDate' | 'downloadsCount' | 'indexingStatus'>) => void;
   deleteMaterial: (id: string) => void;
+  editMaterial: (id: string, updates: Partial<StudyMaterial>) => void;
   exams: Exam[];
   deployExam: (examId: string, config: { examType: 'Theory' | 'Coding' | 'Circuit' | 'Chemistry' | 'Mixed'; scheduleDate: string; duration: number; testCases?: { input: string; output: string }[] }) => void;
   updateExamLiveControls: (examId: string, action: 'pause' | 'extend' | 'end') => void;
@@ -169,6 +173,7 @@ export const FACULTY_AVATAR_PRESETS = [
 export function FacultyProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('light');
   const [avatarIndex, setAvatarIndexState] = useState<number>(2);
+  const [semester, setSemesterState] = useState<'Sem 1' | 'Sem 3' | 'Sem 5' | 'Sem 7'>('Sem 5');
   const [profile, setProfileState] = useState<FacultyProfile>({
     name: 'Dr. Priya Nair',
     email: 'p.nair@university.edu',
@@ -218,11 +223,29 @@ export function FacultyProvider({ children }: { children: React.ReactNode }) {
       submittedCount: 38,
       totalCount: 45,
       status: 'Active',
+      type: 'Assignment',
       submissions: [
         { studentName: 'Alex Sterling', rollNumber: 'EX-2026-8893', timestamp: '2026-06-25 10:15 AM', status: 'Submitted', fileUrl: 'alex_derivation.pdf', graded: false },
         { studentName: 'Clara Mercer', rollNumber: 'EX-2026-7734', timestamp: '2026-06-25 09:42 AM', status: 'Submitted', fileUrl: 'clara_derivation.pdf', graded: true, marks: 48, feedback: 'Excellent steps and clean diagrammatic layout.' },
         { studentName: 'Devon Lee', rollNumber: 'EX-2026-1049', timestamp: '2026-06-26 11:05 PM', status: 'Late', fileUrl: 'devon_draft.pdf', graded: false },
         { studentName: 'Marcus Aurelius', rollNumber: 'EX-2026-1192', timestamp: '—', status: 'Missing', graded: false }
+      ]
+    },
+    {
+      id: 'PRJ-001',
+      title: 'Deep Learning Image Style Transfer',
+      description: 'Implement a neural style transfer network using VGG-19 features. Reconstruct style and content targets.',
+      course: 'CS-305: Neural Network Architectures',
+      dueDate: '2026-07-15',
+      maxMarks: 100,
+      submittedCount: 15,
+      totalCount: 45,
+      status: 'Active',
+      type: 'Project',
+      submissions: [
+        { studentName: 'Alex Sterling', rollNumber: 'EX-2026-8893', timestamp: '2026-06-26 04:12 PM', status: 'Submitted', fileUrl: 'alex_style_transfer.zip', graded: false },
+        { studentName: 'Clara Mercer', rollNumber: 'EX-2026-7734', timestamp: '2026-06-26 03:30 PM', status: 'Submitted', fileUrl: 'clara_style_transfer.zip', graded: true, marks: 95, feedback: 'Stunning artistic results and excellent parameters convergence curve description.' },
+        { studentName: 'Devon Lee', rollNumber: 'EX-2026-1049', timestamp: '—', status: 'Missing', graded: false }
       ]
     }
   ]);
@@ -343,7 +366,7 @@ export function FacultyProvider({ children }: { children: React.ReactNode }) {
       timestamp: '2026-06-27 10:22 AM',
       confidence: 94,
       type: 'Object Detected',
-      image: '/images/exam_terminal.png',
+      image: '/images/devon_violation.jpg',
       status: 'Unreviewed'
     },
     {
@@ -353,7 +376,7 @@ export function FacultyProvider({ children }: { children: React.ReactNode }) {
       timestamp: '2026-06-27 10:15 AM',
       confidence: 82,
       type: 'Person Count',
-      image: '/images/college_campus.png',
+      image: '/images/marcus_violation.jpg',
       status: 'Unreviewed'
     }
   ]);
@@ -372,6 +395,9 @@ export function FacultyProvider({ children }: { children: React.ReactNode }) {
 
       const storedAvatar = localStorage.getItem('faculty_avatar');
       if (storedAvatar) setAvatarIndexState(Number(storedAvatar));
+
+      const storedSemester = localStorage.getItem('faculty_semester') as 'Sem 1' | 'Sem 3' | 'Sem 5' | 'Sem 7';
+      if (storedSemester) setSemesterState(storedSemester);
 
       const storedProfile = localStorage.getItem('faculty_profile');
       if (storedProfile) setProfileState(JSON.parse(storedProfile));
@@ -433,11 +459,13 @@ export function FacultyProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('faculty_avatar', String(index));
   };
 
-  const addAssignment = (assign: Omit<Assignment, 'id' | 'submittedCount' | 'totalCount' | 'submissions'>) => {
+  const addAssignment = (assign: Omit<Assignment, 'id' | 'submittedCount' | 'totalCount' | 'submissions'> & { type?: 'Assignment' | 'Project' }) => {
     setAssignments((prev) => {
+      const isProject = assign.type === 'Project';
+      const idPrefix = isProject ? 'PRJ' : 'ASN';
       const newAssign: Assignment = {
         ...assign,
-        id: `ASN-${Math.floor(100 + Math.random() * 900)}`,
+        id: `${idPrefix}-${Math.floor(100 + Math.random() * 900)}`,
         submittedCount: 0,
         totalCount: 45,
         submissions: []
@@ -499,6 +527,19 @@ export function FacultyProvider({ children }: { children: React.ReactNode }) {
   const deleteMaterial = (id: string) => {
     setMaterials((prev) => {
       const updated = prev.filter((m) => m.id !== id);
+      localStorage.setItem('faculty_materials', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const setSemester = (sem: 'Sem 1' | 'Sem 3' | 'Sem 5' | 'Sem 7') => {
+    setSemesterState(sem);
+    localStorage.setItem('faculty_semester', sem);
+  };
+
+  const editMaterial = (id: string, updates: Partial<StudyMaterial>) => {
+    setMaterials((prev) => {
+      const updated = prev.map((m) => m.id === id ? { ...m, ...updates } : m);
       localStorage.setItem('faculty_materials', JSON.stringify(updated));
       return updated;
     });
@@ -600,6 +641,8 @@ export function FacultyProvider({ children }: { children: React.ReactNode }) {
         updateProfile,
         avatarIndex,
         setAvatarIndex,
+        semester,
+        setSemester,
         classes,
         assignments,
         addAssignment,
@@ -607,6 +650,7 @@ export function FacultyProvider({ children }: { children: React.ReactNode }) {
         materials,
         uploadMaterial,
         deleteMaterial,
+        editMaterial,
         exams,
         deployExam,
         updateExamLiveControls,

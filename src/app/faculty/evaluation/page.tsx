@@ -1,13 +1,80 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useFaculty } from '../context/FacultyContext';
 import { BarChart3, ChevronLeft, User, Check, CheckCircle2, PenSquare } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 
-export default function EvaluationPage() {
+interface KatexRenderer {
+  render: (tex: string, element: HTMLElement, options?: { displayMode?: boolean; throwOnError?: boolean }) => void;
+}
+
+function MathView({ tex }: { tex: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [katexLoaded, setKatexLoaded] = useState(false);
+
+  useEffect(() => {
+    const win = window as unknown as { katex?: KatexRenderer };
+    if (win.katex) {
+      setKatexLoaded(true);
+      return;
+    }
+
+    const cssId = 'katex-cdn-css';
+    if (!document.getElementById(cssId)) {
+      const link = document.createElement('link');
+      link.id = cssId;
+      link.rel = 'stylesheet';
+      link.href = 'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css';
+      document.head.appendChild(link);
+    }
+
+    const scriptId = 'katex-cdn-js';
+    if (!document.getElementById(scriptId)) {
+      const script = document.createElement('script');
+      script.id = scriptId;
+      script.src = 'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js';
+      script.onload = () => setKatexLoaded(true);
+      document.body.appendChild(script);
+    } else {
+      const interval = setInterval(() => {
+        if (win.katex) {
+          setKatexLoaded(true);
+          clearInterval(interval);
+        }
+      }, 100);
+      return () => clearInterval(interval);
+    }
+  }, []);
+
+  useEffect(() => {
+    const win = window as unknown as { katex?: KatexRenderer };
+    if (katexLoaded && containerRef.current && win.katex) {
+      try {
+        win.katex.render(tex, containerRef.current, {
+          displayMode: true,
+          throwOnError: false
+        });
+      } catch (err) {
+        console.error(err);
+        containerRef.current.textContent = tex;
+      }
+    }
+  }, [tex, katexLoaded]);
+
+  return (
+    <div ref={containerRef} className="py-2 overflow-x-auto text-[#1E1B24] dark:text-[#EDEAF2] font-serif italic text-center text-[13.5px]">
+      {tex}
+    </div>
+  );
+}
+
+function EvaluationPageContent() {
   const { evaluationExams, approveQuestionMarks, approveAllQuestions, publishExamResults } = useFaculty();
+  const searchParams = useSearchParams();
+  const queryExamId = searchParams.get('examId');
 
-  const [selectedExamId, setSelectedExamId] = useState<string | null>(null);
+  const [selectedExamId, setSelectedExamId] = useState<string | null>(queryExamId);
   const [selectedStudentRoll, setSelectedStudentRoll] = useState<string | null>(null);
   const [showPublishModal, setShowPublishModal] = useState(false);
 
@@ -216,13 +283,14 @@ export default function EvaluationPage() {
                       </span>
                     </div>
 
-                    {/* Student's answer */}
                     <div className="p-3.5 rounded-xl border border-[#E3D5BC]/30 dark:border-white/5 bg-white/35 dark:bg-black/10">
                       <span className="text-[9.5px] font-mono uppercase tracking-wider text-[#5C5868]/60 block mb-1">Student Answer</span>
                       {q.type === 'Code' ? (
                         <pre className="font-mono text-[11px] bg-black/5 dark:bg-black/20 p-2.5 rounded-lg overflow-x-auto text-[#1E1B24] dark:text-[#EDEAF2]">
                           <code>{q.studentAnswer}</code>
                         </pre>
+                      ) : q.type === 'Math' ? (
+                        <MathView tex={q.studentAnswer} />
                       ) : (
                         <p className="text-[12.5px] leading-relaxed text-[#1E1B24] dark:text-[#EDEAF2] font-serif">
                           {q.studentAnswer}
@@ -340,5 +408,17 @@ export default function EvaluationPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function EvaluationPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-[400px] flex items-center justify-center font-mono text-[12.5px] text-[#5C5868]/70">
+        Loading evaluation queue...
+      </div>
+    }>
+      <EvaluationPageContent />
+    </Suspense>
   );
 }

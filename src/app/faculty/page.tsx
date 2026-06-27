@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useFaculty } from './context/FacultyContext';
 import {
   Sparkles,
@@ -13,13 +13,14 @@ import {
   CheckCircle
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function FacultyDashboard() {
-  const { classes, assignments, exams, evaluationExams, violations } = useFaculty();
-  const [activeSem, setActiveSem] = useState<'Sem 1' | 'Sem 3' | 'Sem 5' | 'Sem 7'>('Sem 5');
+  const { classes, assignments, exams, evaluationExams, violations, semester: activeSem, setSemester: setActiveSem } = useFaculty();
 
   // Filter values based on activeSem
-  const activeClasses = classes.filter((c) => c.semester === activeSem || activeSem === 'Sem 5');
+  const normalizedActiveSem = activeSem.replace('Sem ', 'Semester ');
+  const activeClasses = classes.filter((c) => c.semester === normalizedActiveSem);
   const activeStudentCount = activeClasses.reduce((acc, curr) => acc + curr.studentCount, 0);
 
   const pendingEvalCount = evaluationExams.reduce((acc, curr) => {
@@ -229,29 +230,43 @@ export default function FacultyDashboard() {
               Unreviewed Violations
             </h3>
 
-            <div className="grid grid-cols-2 gap-3.5">
-              {violations.filter((v) => v.status === 'Unreviewed').map((v) => (
-                <div key={v.id} className="relative group rounded-xl overflow-hidden border border-[#E3D5BC]/30 dark:border-white/5 aspect-[4/3] bg-black/40">
-                  <div className="absolute inset-0 flex flex-col justify-between p-2.5 bg-gradient-to-t from-black/80 via-black/20 to-transparent text-[9.5px] text-white">
-                    <span className="px-1.5 py-0.5 rounded font-mono font-bold bg-[#FBE4E1] text-[#C1493D] self-start uppercase tracking-wider">
-                      {v.type}
-                    </span>
-                    <div>
-                      <p className="font-bold truncate">{v.studentName}</p>
-                      <p className="text-[8px] opacity-75 truncate">{v.timestamp.split(' ')[1]} AM</p>
+            {unreviewedViolationsCount === 0 ? (
+              <div className="text-center py-8 text-[12.5px] text-[#5C5868]/60 dark:text-[#9591A3]/65 font-medium border border-dashed border-[#E3D5BC]/30 dark:border-white/5 rounded-xl">
+                No violations to review
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-3.5">
+                  {violations.filter((v) => v.status === 'Unreviewed').map((v) => (
+                    <div key={v.id} className="relative group rounded-xl overflow-hidden border border-[#E3D5BC]/30 dark:border-white/5 aspect-[4/3] bg-black/40">
+                      <Image
+                        src={v.image}
+                        alt={v.studentName}
+                        fill
+                        className="object-cover"
+                      />
+                      <div className="absolute inset-0 flex flex-col justify-between p-2.5 bg-gradient-to-t from-black/80 via-black/20 to-transparent text-[9.5px] text-white">
+                        <span className="px-1.5 py-0.5 rounded font-mono font-bold bg-[#FBE4E1] text-[#C1493D] self-start uppercase tracking-wider">
+                          {v.type}
+                        </span>
+                        <div>
+                          <p className="font-bold truncate">{v.studentName}</p>
+                          <p className="text-[8px] opacity-75 truncate">{v.timestamp.split(' ')[1]} AM</p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
 
-            <Link
-              href="/faculty/violations"
-              className="w-full py-2.5 rounded-xl border border-[#E3D5BC]/40 dark:border-white/5 hover:bg-[#E3D5BC]/30 dark:hover:bg-white/5 text-[12px] font-bold text-[#1E1B24] dark:text-[#EDEAF2] flex items-center justify-center gap-1 transition-all"
-            >
-              <span>Review Logs</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+                <Link
+                  href="/faculty/violations"
+                  className="w-full py-2.5 rounded-xl border border-[#E3D5BC]/40 dark:border-white/5 hover:bg-[#E3D5BC]/30 dark:hover:bg-white/5 text-[12px] font-bold text-[#1E1B24] dark:text-[#EDEAF2] flex items-center justify-center gap-1 transition-all"
+                >
+                  <span>Review Logs</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Quick Links Row */}

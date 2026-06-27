@@ -1,17 +1,44 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useFaculty } from '../context/FacultyContext';
-import { UploadCloud, Trash2, FolderPlus, Loader2, CheckCircle2, Plus, X, Download } from 'lucide-react';
+import { useFaculty, StudyMaterial } from '../context/FacultyContext';
+import { UploadCloud, Trash2, FolderPlus, Loader2, CheckCircle2, Plus, X, Download, PenSquare } from 'lucide-react';
 
 export default function StudyMaterialsPage() {
-  const { materials, uploadMaterial, deleteMaterial } = useFaculty();
+  const { materials, uploadMaterial, deleteMaterial, editMaterial } = useFaculty();
 
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newCourse, setNewCourse] = useState('CS-305: Neural Network Architectures');
   const [newType, setNewType] = useState<'PDF' | 'PPT' | 'DOC'>('PDF');
   const [newDesc, setNewDesc] = useState('');
+
+  // Edit states
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingMatId, setEditingMatId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editCourse, setEditCourse] = useState('CS-305: Neural Network Architectures');
+  const [editType, setEditType] = useState<'PDF' | 'PPT' | 'DOC'>('PDF');
+
+  const handleOpenEdit = (mat: StudyMaterial) => {
+    setEditingMatId(mat.id);
+    setEditTitle(mat.title);
+    setEditCourse(mat.course);
+    setEditType(mat.type);
+    setShowEditModal(true);
+  };
+
+  const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMatId || !editTitle.trim()) return;
+    editMaterial(editingMatId, {
+      title: editTitle,
+      course: editCourse,
+      type: editType
+    });
+    setShowEditModal(false);
+    setEditingMatId(null);
+  };
 
   const handleUploadSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,12 +130,20 @@ export default function StudyMaterialsPage() {
                     <span>Size: {mat.size}</span>
                   </div>
 
-                  <button
-                    onClick={() => deleteMaterial(mat.id)}
-                    className="p-1.5 rounded-lg text-[#C1493D] hover:bg-[#FBE4E1] dark:hover:bg-[#C1493D]/10 transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="flex gap-2 shrink-0">
+                    <button
+                      onClick={() => handleOpenEdit(mat)}
+                      className="p-1.5 rounded-lg text-[#4A63C9] hover:bg-[#E1E9FB] dark:hover:bg-[#4A63C9]/10 transition-colors"
+                    >
+                      <PenSquare className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => deleteMaterial(mat.id)}
+                      className="p-1.5 rounded-lg text-[#C1493D] hover:bg-[#FBE4E1] dark:hover:bg-[#C1493D]/10 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
             );
@@ -192,6 +227,67 @@ export default function StudyMaterialsPage() {
             >
               <FolderPlus className="w-4.5 h-4.5" />
               <span>Confirm & Start RAG Indexing</span>
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+          <form onSubmit={handleEditSubmit} className="bg-[#FAF6EE] dark:bg-[#16141C] border border-[#E3D5BC] dark:border-white/10 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div className="flex justify-between items-center pb-2 border-b border-[#E3D5BC]/20">
+              <h3 className="font-display font-bold text-[18px] text-[#1E1B24] dark:text-[#EDEAF2]">
+                Edit Study Material
+              </h3>
+              <button type="button" onClick={() => setShowEditModal(false)} className="text-[#5C5868]/60 hover:text-[#1E1B24]">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-mono uppercase tracking-wider text-[#5C5868]/70 dark:text-[#9591A3]/50">Material Title</label>
+              <input
+                type="text"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                className="w-full bg-white/50 dark:bg-[#1D1A24]/40 border border-[#E3D5BC]/55 dark:border-white/5 rounded-xl px-4 py-2.5 text-[13px] text-[#1E1B24] dark:text-[#EDEAF2] focus:outline-none"
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-mono uppercase tracking-wider text-[#5C5868]/70 dark:text-[#9591A3]/50">Target Subject</label>
+                <select
+                  value={editCourse}
+                  onChange={(e) => setEditCourse(e.target.value)}
+                  className="w-full bg-white/50 dark:bg-[#1D1A24]/40 border border-[#E3D5BC]/55 dark:border-white/5 rounded-xl px-2.5 py-2 text-[12px] text-[#1E1B24] dark:text-[#EDEAF2]"
+                >
+                  <option value="CS-305: Neural Network Architectures">CS-305: Neural Networks</option>
+                  <option value="CS-301: Advanced Data Structures">CS-301: Data Structures</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-mono uppercase tracking-wider text-[#5C5868]/70 dark:text-[#9591A3]/50">File Format</label>
+                <select
+                  value={editType}
+                  onChange={(e) => setEditType(e.target.value as 'PDF' | 'PPT' | 'DOC')}
+                  className="w-full bg-white/50 dark:bg-[#1D1A24]/40 border border-[#E3D5BC]/55 dark:border-white/5 rounded-xl px-2.5 py-2 text-[12px] text-[#1E1B24] dark:text-[#EDEAF2]"
+                >
+                  <option value="PDF">PDF Document</option>
+                  <option value="PPT">PowerPoint Slides</option>
+                  <option value="DOC">Word Document</option>
+                </select>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-3 mt-2 bg-[#4A63C9] text-white text-[13px] font-bold rounded-xl hover:bg-[#3b51b3] shadow-md transition-all flex items-center justify-center gap-1.5"
+            >
+              <span>Save Changes</span>
             </button>
           </form>
         </div>

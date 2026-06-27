@@ -1,18 +1,31 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useFaculty } from '../context/FacultyContext';
 import { Users, Calendar, Download, Search, GraduationCap, MapPin } from 'lucide-react';
 
 export default function MyClassesPage() {
-  const { classes } = useFaculty();
-  const [activeSem, setActiveSem] = useState<'Sem 1' | 'Sem 3' | 'Sem 5' | 'Sem 7'>('Sem 5');
+  const { classes, semester: activeSem, setSemester: setActiveSem } = useFaculty();
   const [activeTab, setActiveTab] = useState<'Roster' | 'Timetable'>('Roster');
   const [selectedClassId, setSelectedClassId] = useState<string>('SEC-A-CS305');
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Auto-select first class when changing semester if not in the new filtered list
+  useEffect(() => {
+    const normalizedSem = activeSem.replace('Sem ', 'Semester ');
+    const semClasses = classes.filter(c => c.semester === normalizedSem);
+    if (semClasses.length > 0) {
+      if (!semClasses.some(c => c.id === selectedClassId)) {
+        setSelectedClassId(semClasses[0].id);
+      }
+    } else {
+      setSelectedClassId('');
+    }
+  }, [activeSem, classes, selectedClassId]);
+
   // Filter classes by sem
-  const semClasses = classes.filter(c => c.semester === activeSem);
+  const normalizedActiveSem = activeSem.replace('Sem ', 'Semester ');
+  const semClasses = classes.filter(c => c.semester === normalizedActiveSem);
   const selectedClass = classes.find(c => c.id === selectedClassId);
 
   // Filter roster by search
@@ -56,6 +69,11 @@ export default function MyClassesPage() {
     { day: 'Friday', slotIdx: 2, subject: 'CS-301: Advanced Data Structures', room: 'LH-104', type: 'lecture' }
   ];
 
+  const activeSubjectCodes = semClasses.map(c => c.subject.split(': ')[0]);
+  const filteredTimetableSlots = timetableSlots.filter(s =>
+    activeSubjectCodes.some(code => s.subject.includes(code))
+  );
+
   return (
     <div className="space-y-6">
       {/* Semester switch chips & Roster/Timetable tabs */}
@@ -67,9 +85,13 @@ export default function MyClassesPage() {
               key={sem}
               onClick={() => {
                 setActiveSem(sem);
-                // Select first class of new sem if Roster
-                const filtered = classes.filter(c => c.semester === sem);
-                if (filtered.length > 0) setSelectedClassId(filtered[0].id);
+                const normalizedSem = sem.replace('Sem ', 'Semester ');
+                const filtered = classes.filter(c => c.semester === normalizedSem);
+                if (filtered.length > 0) {
+                  setSelectedClassId(filtered[0].id);
+                } else {
+                  setSelectedClassId('');
+                }
               }}
               className={`px-3 py-1.5 rounded-lg text-[11.5px] font-semibold transition-all duration-200 ${
                 activeSem === sem
@@ -162,7 +184,7 @@ export default function MyClassesPage() {
                       placeholder="Search roster..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="bg-white/50 dark:bg-[#1D1A24]/40 border border-[#E3D5BC]/50 dark:border-white/5 rounded-xl pl-8 pr-3 py-2 text-[12px] text-[#1E1B24] dark:text-[#EDEAF2] focus:outline-none"
+                      className="bg-white/50 dark:bg-[#1D1A24]/40 border border-[#E3D5BC]/55 dark:border-white/5 rounded-xl pl-8 pr-3 py-2 text-[12px] text-[#1E1B24] dark:text-[#EDEAF2] focus:outline-none"
                     />
                   </div>
 
@@ -209,7 +231,11 @@ export default function MyClassesPage() {
                 </table>
               </div>
             </div>
-          ) : null}
+          ) : (
+            <div className="lg:col-span-8 p-8 rounded-2xl bg-white/40 dark:bg-white/5 border border-white/50 dark:border-white/5 text-center text-[#5C5868]/60 font-mono py-20 select-none">
+              No class selected or assigned for this semester.
+            </div>
+          )}
         </div>
       ) : (
         /* Timetable Tab */
@@ -223,63 +249,69 @@ export default function MyClassesPage() {
             </p>
           </div>
 
-          <div className="overflow-x-auto no-scrollbar">
-            <div className="min-w-[800px] border border-[#E3D5BC]/20 dark:border-white/10 rounded-2xl overflow-hidden">
-              {/* Table header */}
-              <div className="grid grid-cols-7 bg-[#F2EBE0] dark:bg-[#1D1A24] text-[10px] font-mono uppercase tracking-wider text-[#5C5868]/80 dark:text-[#9591A3]/80 border-b border-[#E3D5BC]/20 dark:border-white/10">
-                <div className="p-3 border-r border-[#E3D5BC]/20 dark:border-white/10 font-bold">Time Slot</div>
-                {days.map((d) => (
-                  <div key={d} className="p-3 text-center border-r border-[#E3D5BC]/20 dark:border-white/10 last:border-0 font-bold">
-                    {d}
+          {filteredTimetableSlots.length === 0 ? (
+            <div className="p-8 rounded-2xl bg-white/40 dark:bg-white/5 border border-white/50 dark:border-white/5 text-center text-[#5C5868]/60 font-mono py-12 select-none">
+              No timetable classes scheduled for this semester.
+            </div>
+          ) : (
+            <div className="overflow-x-auto no-scrollbar">
+              <div className="min-w-[800px] border border-[#E3D5BC]/20 dark:border-white/10 rounded-2xl overflow-hidden">
+                {/* Table header */}
+                <div className="grid grid-cols-7 bg-[#F2EBE0] dark:bg-[#1D1A24] text-[10px] font-mono uppercase tracking-wider text-[#5C5868]/80 dark:text-[#9591A3]/80 border-b border-[#E3D5BC]/20 dark:border-white/10">
+                  <div className="p-3 border-r border-[#E3D5BC]/20 dark:border-white/10 font-bold">Time Slot</div>
+                  {days.map((d) => (
+                    <div key={d} className="p-3 text-center border-r border-[#E3D5BC]/20 dark:border-white/10 last:border-0 font-bold">
+                      {d}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Grid rows */}
+                {timeSlots.map((slot, slotIdx) => (
+                  <div key={slot} className="grid grid-cols-7 border-b border-[#E3D5BC]/15 dark:border-white/10 last:border-b-0">
+                    {/* Slot time */}
+                    <div className="p-3 border-r border-[#E3D5BC]/15 dark:border-white/10 bg-white/20 dark:bg-black/10 flex items-center">
+                      <span className="font-mono text-[9.5px] leading-tight text-[#5C5868] dark:text-[#9591A3] font-bold">
+                        {slot}
+                      </span>
+                    </div>
+
+                    {/* Days */}
+                    {days.map((day) => {
+                      const block = filteredTimetableSlots.find(s => s.day === day && s.slotIdx === slotIdx);
+                      if (block) {
+                        const isLab = block.type === 'lab';
+                        return (
+                          <div
+                            key={day}
+                            className={`p-2.5 border-r border-[#E3D5BC]/15 dark:border-white/10 flex flex-col justify-between last:border-0 ${
+                              isLab
+                                ? 'bg-gradient-to-br from-[#9C7FDB]/10 to-[#7B93E8]/10 bg-[length:10px_10px] border-l-2 border-[#9C7FDB]'
+                                : 'bg-[#4A63C9]/5 border-l-2 border-[#4A63C9]'
+                            }`}
+                          >
+                            <h5 className="font-semibold text-[10.5px] text-[#1E1B24] dark:text-[#EDEAF2] leading-tight line-clamp-2">
+                              {block.subject.split(': ')[0]}
+                            </h5>
+                            <div className="flex items-center justify-between text-[9px] text-[#5C5868]/80 dark:text-[#9591A3]/80 font-mono mt-2 pt-1 border-t border-[#E3D5BC]/10 dark:border-white/5">
+                              <span className="flex items-center gap-0.5">
+                                <MapPin className="w-2.5 h-2.5 text-[#5C5868]/60" /> {block.room}
+                              </span>
+                              <span className="capitalize text-[8.5px] font-bold">{block.type}</span>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div key={day} className="p-3 border-r border-[#E3D5BC]/15 dark:border-white/10 last:border-0 bg-white/10 dark:bg-transparent" />
+                      );
+                    })}
                   </div>
                 ))}
               </div>
-
-              {/* Grid rows */}
-              {timeSlots.map((slot, slotIdx) => (
-                <div key={slot} className="grid grid-cols-7 border-b border-[#E3D5BC]/15 dark:border-white/10 last:border-b-0">
-                  {/* Slot time */}
-                  <div className="p-3 border-r border-[#E3D5BC]/15 dark:border-white/10 bg-white/20 dark:bg-black/10 flex items-center">
-                    <span className="font-mono text-[9.5px] leading-tight text-[#5C5868] dark:text-[#9591A3] font-bold">
-                      {slot}
-                    </span>
-                  </div>
-
-                  {/* Days */}
-                  {days.map((day) => {
-                    const block = timetableSlots.find(s => s.day === day && s.slotIdx === slotIdx);
-                    if (block) {
-                      const isLab = block.type === 'lab';
-                      return (
-                        <div
-                          key={day}
-                          className={`p-2.5 border-r border-[#E3D5BC]/15 dark:border-white/10 flex flex-col justify-between last:border-0 ${
-                            isLab
-                              ? 'bg-gradient-to-br from-[#9C7FDB]/10 to-[#7B93E8]/10 bg-[length:10px_10px] border-l-2 border-[#9C7FDB]'
-                              : 'bg-[#4A63C9]/5 border-l-2 border-[#4A63C9]'
-                          }`}
-                        >
-                          <h5 className="font-semibold text-[10.5px] text-[#1E1B24] dark:text-[#EDEAF2] leading-tight line-clamp-2">
-                            {block.subject.split(': ')[0]}
-                          </h5>
-                          <div className="flex items-center justify-between text-[9px] text-[#5C5868]/80 dark:text-[#9591A3]/80 font-mono mt-2 pt-1 border-t border-[#E3D5BC]/10 dark:border-white/5">
-                            <span className="flex items-center gap-0.5">
-                              <MapPin className="w-2.5 h-2.5 text-[#5C5868]/60" /> {block.room}
-                            </span>
-                            <span className="capitalize text-[8.5px] font-bold">{block.type}</span>
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    return (
-                      <div key={day} className="p-3 border-r border-[#E3D5BC]/15 dark:border-white/10 last:border-0 bg-white/10 dark:bg-transparent" />
-                    );
-                  })}
-                </div>
-              ))}
             </div>
-          </div>
+          )}
         </div>
       )}
     </div>
