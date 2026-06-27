@@ -30,12 +30,15 @@ export default function Header() {
     return parts.map((part, index) => {
       const href = '/' + parts.slice(0, index + 1).join('/');
       let label = part.charAt(0).toUpperCase() + part.slice(1);
-      if (part === 'exams') label = 'Exam Creator';
-      if (part === 'grading') label = 'Grading & Proctoring';
-      if (part === 'timetable') label = 'Teaching Schedule';
-      if (part === 'students') label = 'Class Registry';
-      if (part === 'materials') label = 'Course Materials';
-      if (part === 'vault') label = 'Departmental Vault';
+      if (part === 'classes') label = 'My Classes';
+      if (part === 'assignments') label = 'Assignments & Projects';
+      if (part === 'materials') label = 'Study Materials';
+      if (part === 'question-generator') label = 'Question Generator';
+      if (part === 'exams') label = 'Exams';
+      if (part === 'evaluation') label = 'Evaluation & Results';
+      if (part === 'violations') label = 'Violation Review';
+      if (part === 'settings') label = 'Settings';
+      if (part === 'help') label = 'Help & Support';
       return { href, label };
     });
   };
