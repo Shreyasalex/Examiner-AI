@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useStudent, AVATAR_PRESETS } from '../context/StudentContext';
-import { LayoutDashboard, CalendarRange, ClipboardList, BookOpen, Coins, ShieldAlert, GraduationCap, FolderOpen, Settings, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, CalendarRange, ClipboardList, BookOpen, Coins, ShieldAlert, GraduationCap, FolderOpen, Settings, LogOut, Menu, X, HelpCircle } from 'lucide-react';
 
 export default function Sidebar() {
   const { profile, avatarIndex } = useStudent();
@@ -98,8 +98,20 @@ export default function Sidebar() {
           })}
         </nav>
 
-        {/* Logout */}
-        <div className="pt-3 border-t border-[#E3D5BC]/50 dark:border-white/10">
+        {/* Help & Support & Logout */}
+        <div className="pt-3 border-t border-[#E3D5BC]/50 dark:border-white/10 space-y-1">
+          <Link
+            href="/student/help"
+            onClick={() => setIsOpen(false)}
+            className={`flex items-center gap-3 px-4 py-2 rounded-xl text-[13.5px] font-medium transition-all ${
+              pathname === '/student/help'
+                ? 'bg-[#4A63C9] text-white shadow-md'
+                : 'text-[#5C5868] dark:text-[#E4E2E4]/70 hover:bg-white/50 dark:hover:bg-white/5 hover:text-[#1E1B24] dark:hover:text-white'
+            }`}
+          >
+            <HelpCircle className="w-[18px] h-[18px] shrink-0" />
+            <span>Help & Support</span>
+          </Link>
           <Link
             href="/login"
             className="flex items-center gap-3 px-4 py-2 rounded-xl text-[13.5px] font-medium text-[#C1493D] hover:bg-[#FBE4E1]/50 dark:hover:bg-[#C1493D]/10 transition-colors"

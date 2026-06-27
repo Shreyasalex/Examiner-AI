@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { usePathname } from 'next/navigation';
 import { StudentProvider } from './context/StudentContext';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
@@ -8,6 +9,19 @@ import { GradientMesh } from '@/components/GradientMesh';
 import { Particles } from '@/components/Particles';
 
 export default function StudentLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const isTerminal = pathname === '/student/exams/terminal';
+
+  if (isTerminal) {
+    return (
+      <StudentProvider>
+        <div className="min-h-screen relative overflow-hidden bg-[#131315] text-white">
+          {children}
+        </div>
+      </StudentProvider>
+    );
+  }
+
   return (
     <StudentProvider>
       <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-3 md:p-6 lg:p-8 bg-[#FAF6EE] dark:bg-[#131315]">

@@ -22,7 +22,7 @@ interface FacultyMember {
   color: string;
 }
 
-const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 const TIMETABLE_DATA: Record<string, TimetableSlot[]> = {
   Monday: [
@@ -50,11 +50,17 @@ const TIMETABLE_DATA: Record<string, TimetableSlot[]> = {
     { time: '11:00 AM - 12:30 PM', subject: 'Advanced Algorithms', code: 'CS-304', faculty: 'Prof. Alan Turing', room: 'LHC-108' },
     { time: '02:00 PM - 03:30 PM', subject: 'Computational Logic', code: 'CS-303', faculty: 'Dr. Sarah Jenkins', room: 'LHC-302' },
   ],
+  Saturday: [
+    { time: '09:00 AM - 10:30 AM', subject: 'Advanced Algorithms', code: 'CS-304', faculty: 'Prof. Alan Turing', room: 'LHC-108' },
+    { time: '11:00 AM - 12:30 PM', subject: 'Neural Network Architectures', code: 'CS-305', faculty: 'Dr. Grace Hopper', room: 'LHC-405' },
+    { time: '01:00 PM - 04:00 PM', subject: 'Computational Logic Lab', code: 'CS-303L', faculty: 'Dr. Sarah Jenkins', room: 'Lab 1' },
+  ],
 };
 
 const LAB_DATA = [
   { day: 'Tuesday', time: '02:00 PM - 05:00 PM', name: 'Advanced Data Structures Lab', code: 'CS-301L', room: 'Computing Center Lab 3', instructor: 'Dr. Evelyn Vance' },
   { day: 'Thursday', time: '02:00 PM - 05:00 PM', name: 'Neural Network Systems Lab', code: 'CS-305L', room: 'AI & Robotics Lab 5', instructor: 'Dr. Grace Hopper' },
+  { day: 'Saturday', time: '01:00 PM - 04:00 PM', name: 'Computational Logic Lab', code: 'CS-303L', room: 'Computing Center Lab 1', instructor: 'Dr. Sarah Jenkins' },
 ];
 
 const FACULTY_DATA: FacultyMember[] = [

@@ -1,37 +1,30 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useStudent } from '../context/StudentContext';
-import { FileText, Download, Search, Lock, HardDrive } from 'lucide-react';
+import { FileText, Download, Search, HardDrive, CheckCircle2 } from 'lucide-react';
 
-type DocFilter = 'all' | 'receipts' | 'academics' | 'tickets';
+type DocFilter = 'academics' | 'receipts' | 'exams';
 
 interface DocumentItem {
   id: string;
   name: string;
-  category: 'receipts' | 'academics' | 'tickets';
+  category: 'academics' | 'receipts' | 'exams';
   date: string;
   size: string;
   isLocked: boolean;
   downloadMsg: string;
+  hash?: string;
 }
 
 export default function DocumentsPage() {
   const { receipts } = useStudent();
-  const [activeCategory, setActiveCategory] = useState<DocFilter>('all');
+  const [activeCategory, setActiveCategory] = useState<DocFilter>('academics');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isExamRegistered, setIsExamRegistered] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
-  // Load registered state to unlock hall ticket
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setIsExamRegistered(localStorage.getItem('student_exam_registered') === 'true');
-    }
-  }, []);
-
   const getDocuments = (): DocumentItem[] => {
-    // 1. Static academic marks cards
+    // 1. Semester Marks Cards (academics)
     const academicDocs: DocumentItem[] = [
       { id: 'DOC-SEM1', name: 'Semester 1 Official Transcript (Marks Card)', category: 'academics', date: '2024-06-15', size: '1.2 MB', isLocked: false, downloadMsg: 'Downloading Sem 1 marks card...' },
       { id: 'DOC-SEM2', name: 'Semester 2 Official Transcript (Marks Card)', category: 'academics', date: '2024-12-20', size: '1.4 MB', isLocked: false, downloadMsg: 'Downloading Sem 2 marks card...' },
@@ -39,18 +32,7 @@ export default function DocumentsPage() {
       { id: 'DOC-SEM4', name: 'Semester 4 Official Transcript (Marks Card)', category: 'academics', date: '2025-12-22', size: '1.5 MB', isLocked: false, downloadMsg: 'Downloading Sem 4 marks card...' }
     ];
 
-    // 2. Exam registration hall ticket (locked by default until registered)
-    const hallTicketDoc: DocumentItem = {
-      id: 'DOC-HT-SEM5',
-      name: 'Semester 5 Final Exam Hall Ticket',
-      category: 'tickets',
-      date: new Date().toISOString().split('T')[0],
-      size: '420 KB',
-      isLocked: !isExamRegistered,
-      downloadMsg: 'Downloading Sem 5 Exam Hall Ticket...'
-    };
-
-    // 3. Dynamic payment receipts (read from context receipts list)
+    // 2. Payment Receipts (receipts)
     const receiptDocs: DocumentItem[] = receipts.map((rcpt) => ({
       id: rcpt.id,
       name: `Payment Receipt: ${rcpt.examName}`,
@@ -61,7 +43,41 @@ export default function DocumentsPage() {
       downloadMsg: `Downloading Receipt ${rcpt.id}...`
     }));
 
-    return [hallTicketDoc, ...academicDocs, ...receiptDocs];
+    // 3. Exam receipts (exams) - completed exam certificates
+    const examReceipts: DocumentItem[] = [
+      {
+        id: 'CERT-DM302',
+        name: 'Discrete Mathematics Course Completion Certificate',
+        category: 'exams',
+        date: '2026-06-12',
+        size: '320 KB',
+        isLocked: false,
+        hash: '0x8892f392ea129dd94328ff9a',
+        downloadMsg: 'Downloading Discrete Mathematics certificate...'
+      },
+      {
+        id: 'CERT-ADS304',
+        name: 'Advanced Data Structures Term Certificate',
+        category: 'exams',
+        date: '2026-05-18',
+        size: '310 KB',
+        isLocked: false,
+        hash: '0xab73d8e9ffc398ee827d091a',
+        downloadMsg: 'Downloading Advanced Data Structures certificate...'
+      },
+      {
+        id: 'CERT-CL502',
+        name: 'Computational Logic Sandbox Completion Certificate',
+        category: 'exams',
+        date: '2026-05-02',
+        size: '305 KB',
+        isLocked: false,
+        hash: '0x49fec928a38ee9273c8d7912',
+        downloadMsg: 'Downloading Computational Logic certificate...'
+      }
+    ];
+
+    return [...academicDocs, ...receiptDocs, ...examReceipts];
   };
 
   const handleDownload = (doc: DocumentItem) => {
@@ -74,8 +90,7 @@ export default function DocumentsPage() {
   };
 
   const filteredDocs = getDocuments().filter((doc) => {
-    const matchesCategory =
-      activeCategory === 'all' || doc.category === activeCategory;
+    const matchesCategory = doc.category === activeCategory;
 
     const matchesSearch =
       doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -91,10 +106,9 @@ export default function DocumentsPage() {
         {/* Tabs */}
         <div className="flex rounded-xl p-1 bg-[#E3D5BC]/30 dark:bg-white/5 max-w-md overflow-x-auto no-scrollbar shrink-0">
           {[
-            { id: 'all', name: 'All Locker Docs' },
-            { id: 'academics', name: 'Transcripts' },
-            { id: 'receipts', name: 'Receipts' },
-            { id: 'tickets', name: 'Hall Tickets' }
+            { id: 'academics', name: 'Marks Cards' },
+            { id: 'receipts', name: 'Payment Receipts' },
+            { id: 'exams', name: 'Exam Receipts' }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -128,11 +142,7 @@ export default function DocumentsPage() {
         {filteredDocs.map((doc) => (
           <div
             key={doc.id}
-            className={`p-4 rounded-2xl border transition-all flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 ${
-              doc.isLocked
-                ? 'bg-white/10 dark:bg-white/2 border-[#E3D5BC]/20 dark:border-white/2 opacity-60'
-                : 'bg-white/40 dark:bg-white/5 border-white/50 dark:border-white/5 hover:bg-white/60 dark:hover:bg-white/10'
-            }`}
+            className="p-4 rounded-2xl border bg-white/40 dark:bg-white/5 border-white/50 dark:border-white/5 hover:bg-white/60 dark:hover:bg-white/10 transition-all flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
           >
             <div className="flex items-start gap-3">
               <div className="p-2.5 rounded-xl bg-white/80 dark:bg-white/5 border border-[#E3D5BC]/30 dark:border-white/5 text-[#5C5868] dark:text-white shrink-0 mt-0.5">
@@ -144,12 +154,25 @@ export default function DocumentsPage() {
                     {doc.id}
                   </span>
                   <span className="text-[11.5px] font-mono text-[#5C5868]/60 dark:text-[#E4E2E4]/40">
-                    Category: {doc.category}
+                    Category: {doc.category === 'academics' ? 'Marks Cards' : doc.category === 'receipts' ? 'Payment Receipt' : 'Exam Receipt'}
                   </span>
                 </div>
                 <h4 className="font-semibold text-[13.5px] text-[#1E1B24] dark:text-white mt-1 leading-snug">
                   {doc.name}
                 </h4>
+                
+                {/* Cryptographic hash and Verified Badge for Exam Receipts */}
+                {doc.category === 'exams' && doc.hash && (
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
+                    <span className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-700">
+                      Hash: {doc.hash}
+                    </span>
+                    <span className="inline-flex items-center gap-1 bg-[#DFF3E8] text-[#2E8B5C] dark:bg-[#2E8B5C]/20 px-2 py-0.5 rounded font-mono text-[9px] font-bold">
+                      <CheckCircle2 className="w-3 h-3" /> Verified
+                    </span>
+                  </div>
+                )}
+
                 <p className="text-[11px] font-mono text-[#5C5868]/60 dark:text-[#E4E2E4]/40 mt-1">
                   Issued: {doc.date} · File Size: {doc.size}
                 </p>
@@ -157,31 +180,30 @@ export default function DocumentsPage() {
             </div>
 
             <div className="shrink-0 w-full sm:w-auto flex justify-end">
-              {doc.isLocked ? (
-                <div className="px-4 py-2 bg-zinc-200 dark:bg-zinc-800 text-zinc-500 rounded-xl text-[12px] font-bold flex items-center gap-1.5 cursor-not-allowed">
-                  <Lock className="w-3.5 h-3.5" /> Registered Locked
-                </div>
-              ) : (
-                <button
-                  onClick={() => handleDownload(doc)}
-                  disabled={downloadingId !== null}
-                  className="px-4 py-2 bg-white/60 dark:bg-white/5 hover:bg-white border border-[#E3D5BC]/30 dark:border-white/10 text-[#5C5868] hover:text-[#1E1B24] dark:text-white dark:hover:bg-white/15 transition-all flex items-center gap-1.5 text-[12.5px] font-semibold"
-                >
-                  {downloadingId === doc.id ? (
-                    <>
-                      <span className="w-3.5 h-3.5 border-2 border-zinc-500 border-t-transparent rounded-full animate-spin" />
-                      <span>Downloading...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Download className="w-4 h-4" /> Download
-                    </>
-                  )}
-                </button>
-              )}
+              <button
+                onClick={() => handleDownload(doc)}
+                disabled={downloadingId !== null}
+                className="px-4 py-2 bg-white/60 dark:bg-white/5 hover:bg-white border border-[#E3D5BC]/30 dark:border-white/10 text-[#5C5868] hover:text-[#1E1B24] dark:text-white dark:hover:bg-white/15 transition-all flex items-center gap-1.5 text-[12.5px] font-semibold"
+              >
+                {downloadingId === doc.id ? (
+                  <>
+                    <span className="w-3.5 h-3.5 border-2 border-zinc-500 border-t-transparent rounded-full animate-spin" />
+                    <span>Downloading...</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4" /> Download
+                  </>
+                )}
+              </button>
             </div>
           </div>
         ))}
+        {filteredDocs.length === 0 && (
+          <div className="p-8 rounded-2xl bg-white/40 dark:bg-white/5 border border-white/50 dark:border-white/5 text-center text-[#5C5868]/60 dark:text-[#E4E2E4]/40 font-mono text-[13px] py-16">
+            No documents found in this category.
+          </div>
+        )}
       </div>
 
       {/* Cloud Drive Storage usage bar chart */}

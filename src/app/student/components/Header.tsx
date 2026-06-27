@@ -71,10 +71,20 @@ export default function Header() {
         return { title: 'Examinations Hub', icon: ShieldAlert, breadcrumbs: ['Examinations'] };
       case '/student/academics':
         return { title: 'Academics & Evaluations', icon: GraduationCap, breadcrumbs: ['Academics'] };
-      case '/student/vault':
-        return { title: 'Financial Vault', icon: Wallet, breadcrumbs: ['Financial Vault'] };
+      case '/student/payments':
+        return { title: 'Payments & Registrations', icon: Wallet, breadcrumbs: ['Payments'] };
       case '/student/settings':
         return { title: 'Settings & Security', icon: SettingsIcon, breadcrumbs: ['Settings'] };
+      case '/student/timetable':
+        return { title: 'Academic Timetable', icon: DashboardIcon, breadcrumbs: ['Timetable'] };
+      case '/student/assignments':
+        return { title: 'Assignments & Submissions', icon: DashboardIcon, breadcrumbs: ['Assignments'] };
+      case '/student/materials':
+        return { title: 'Study Materials Library', icon: DashboardIcon, breadcrumbs: ['Materials'] };
+      case '/student/documents':
+        return { title: 'Digital Locker & Documents', icon: DashboardIcon, breadcrumbs: ['Documents'] };
+      case '/student/help':
+        return { title: 'Help & Support Desk', icon: HelpCircle, breadcrumbs: ['Help'] };
       default:
         return { title: 'Command Center', icon: DashboardIcon, breadcrumbs: ['Overview'] };
     }
@@ -119,13 +129,13 @@ export default function Header() {
       {/* Header Actions */}
       <div className="flex items-center gap-4">
         {/* Help Link */}
-        <a
-          href="mailto:support@examinerai.com"
+        <Link
+          href="/student/help"
           className="hidden md:flex items-center gap-1.5 text-[13px] text-[#5C5868] dark:text-[#E4E2E4]/70 hover:text-[#1E1B24] dark:hover:text-white transition-colors"
         >
           <HelpCircle className="w-4 h-4" />
           <span>Support SLA</span>
-        </a>
+        </Link>
 
         <div className="h-4 w-[1px] bg-[#E3D5BC]/50 dark:border-white/10 hidden md:block" />
 

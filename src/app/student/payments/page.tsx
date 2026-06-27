@@ -24,35 +24,56 @@ interface Fundraiser {
   category: string;
 }
 
+const EXAM_SUBJECTS = [
+  { code: 'CSE-501', name: 'Advanced Algorithms & Complexity' },
+  { code: 'CSE-503', name: 'Neural Network Architectures' },
+  { code: 'CSE-302', name: 'Discrete Mathematics' },
+  { code: 'CSE-505', name: 'Computational Logic' }
+];
+
 export default function PaymentsPage() {
   const { invoices, payInvoice, profile } = useStudent();
   const [activeTab, setActiveTab] = useState<Tab>('fees');
   
-  // Custom states for events and donations
+  // Custom states for events and donations (updated to INR values)
   const [events, setEvents] = useState<EventItem[]>([
-    { id: 'EVT-101', name: 'Inter-University AI Hackathon 2026', amount: 25, date: '2026-07-18', status: 'Pending', category: 'Technical' },
-    { id: 'EVT-102', name: 'National Sports Fest: Athletics Meet', amount: 15, date: '2026-08-04', status: 'Pending', category: 'Sports' },
-    { id: 'EVT-103', name: 'Computational Logic Guest Lecture Series', amount: 10, date: '2026-07-22', status: 'Pending', category: 'Academic' }
+    { id: 'EVT-101', name: 'Inter-University AI Hackathon 2026', amount: 2500, date: '2026-07-18', status: 'Pending', category: 'Technical' },
+    { id: 'EVT-102', name: 'National Sports Fest: Athletics Meet', amount: 1500, date: '2026-08-04', status: 'Pending', category: 'Sports' },
+    { id: 'EVT-103', name: 'Computational Logic Guest Lecture Series', amount: 1000, date: '2026-07-22', status: 'Pending', category: 'Academic' }
   ]);
 
   const [donations, setDonations] = useState<Fundraiser[]>([
-    { id: 'FND-201', title: 'CSE Robotics Club Lab Equipment Upgrade', description: 'Help our robotics club purchase new hardware actuators and sensors.', raised: 2400, goal: 5000, category: 'Hardware' },
-    { id: 'FND-202', title: 'Green Campus Solar Panel Installation Fund', description: 'Donations to help transition the computer center to green solar energy.', raised: 7800, goal: 12000, category: 'Sustainability' }
+    { id: 'FND-201', title: 'CSE Robotics Club Lab Equipment Upgrade', description: 'Help our robotics club purchase new hardware actuators and sensors.', raised: 240000, goal: 500000, category: 'Hardware' },
+    { id: 'FND-202', title: 'Green Campus Solar Panel Installation Fund', description: 'Donations to help transition the computer center to green solar energy.', raised: 780000, goal: 1200000, category: 'Sustainability' }
   ]);
 
-  // Exam registration state
-  const [examFeePaid, setExamFeePaid] = useState(false);
+  // Exam registration states
+  const [registeredSubjects, setRegisteredSubjects] = useState<string[]>([]);
+  const [checkedSubjects, setCheckedSubjects] = useState<string[]>([]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setExamFeePaid(localStorage.getItem('student_exam_registered') === 'true');
+      const stored = localStorage.getItem('student_registered_subjects');
+      if (stored) {
+        setRegisteredSubjects(JSON.parse(stored));
+      } else {
+        // Fallback for compatibility: if student_exam_registered was true, register all
+        const legacy = localStorage.getItem('student_exam_registered') === 'true';
+        if (legacy) {
+          const allCodes = EXAM_SUBJECTS.map(s => s.code);
+          setRegisteredSubjects(allCodes);
+          localStorage.setItem('student_registered_subjects', JSON.stringify(allCodes));
+        }
+      }
     }
   }, []);
 
   const [payingInvoiceId, setPayingInvoiceId] = useState<string | null>(null);
   const [payingEventId, setPayingEventId] = useState<string | null>(null);
   const [payingDonationId, setPayingDonationId] = useState<string | null>(null);
-  const [donationAmount, setDonationAmount] = useState<number>(25);
+  const [payingExams, setPayingExams] = useState<boolean>(false);
+  
+  const [donationAmount, setDonationAmount] = useState<number>(2500);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
@@ -61,6 +82,7 @@ export default function PaymentsPage() {
     setPayingInvoiceId(id);
     setPayingEventId(null);
     setPayingDonationId(null);
+    setPayingExams(false);
     setPaymentSuccess(false);
     setIsProcessingPayment(false);
   };
@@ -69,6 +91,7 @@ export default function PaymentsPage() {
     setPayingEventId(id);
     setPayingInvoiceId(null);
     setPayingDonationId(null);
+    setPayingExams(false);
     setPaymentSuccess(false);
     setIsProcessingPayment(false);
   };
@@ -77,12 +100,15 @@ export default function PaymentsPage() {
     setPayingDonationId(id);
     setPayingInvoiceId(null);
     setPayingEventId(null);
+    setPayingExams(false);
     setPaymentSuccess(false);
     setIsProcessingPayment(false);
   };
 
   const handleOpenExamRegistrationPayment = () => {
-    setPayingInvoiceId('EXAM-REG-SEM5');
+    if (checkedSubjects.length === 0) return;
+    setPayingExams(true);
+    setPayingInvoiceId(null);
     setPayingEventId(null);
     setPayingDonationId(null);
     setPaymentSuccess(false);
@@ -96,24 +122,7 @@ export default function PaymentsPage() {
       setPaymentSuccess(true);
 
       if (payingInvoiceId) {
-        if (payingInvoiceId === 'EXAM-REG-SEM5') {
-          setExamFeePaid(true);
-          localStorage.setItem('student_exam_registered', 'true');
-          // Add a custom receipt to localStorage receipts list
-          const existingReceipts = JSON.parse(localStorage.getItem('student_receipts') || '[]');
-          const hashSeed = Math.random().toString(36).substring(2, 10);
-          const examReceipt = {
-            id: `RCP-REG-${Math.floor(100 + Math.random() * 900)}`,
-            examName: 'Semester End Examination Registration Fee',
-            dateCompleted: new Date().toISOString().split('T')[0],
-            amount: 50,
-            hash: `0x${hashSeed}ef9a32`,
-            status: 'Graded/Completed/Cleared'
-          };
-          localStorage.setItem('student_receipts', JSON.stringify([examReceipt, ...existingReceipts]));
-        } else {
-          payInvoice(payingInvoiceId);
-        }
+        payInvoice(payingInvoiceId);
       } else if (payingEventId) {
         setEvents((prev) =>
           prev.map((evt) => (evt.id === payingEventId ? { ...evt, status: 'Registered' } : evt))
@@ -156,13 +165,35 @@ export default function PaymentsPage() {
           };
           localStorage.setItem('student_receipts', JSON.stringify([donReceipt, ...existingReceipts]));
         }
+      } else if (payingExams) {
+        const newRegistered = [...registeredSubjects, ...checkedSubjects];
+        setRegisteredSubjects(newRegistered);
+        localStorage.setItem('student_registered_subjects', JSON.stringify(newRegistered));
+        
+        // If all subjects are registered, mark student_exam_registered as true for hall ticket locks
+        if (newRegistered.length === EXAM_SUBJECTS.length) {
+          localStorage.setItem('student_exam_registered', 'true');
+        }
+
+        // Add a receipt
+        const existingReceipts = JSON.parse(localStorage.getItem('student_receipts') || '[]');
+        const hashSeed = Math.random().toString(36).substring(2, 10);
+        const examReceipt = {
+          id: `RCP-REG-${Math.floor(100 + Math.random() * 900)}`,
+          examName: `Exam Reg: ${checkedSubjects.join(', ')}`,
+          dateCompleted: new Date().toISOString().split('T')[0],
+          amount: checkedSubjects.length * 500,
+          hash: `0x${hashSeed}ef9a32`,
+          status: 'Graded/Completed/Cleared'
+        };
+        localStorage.setItem('student_receipts', JSON.stringify([examReceipt, ...existingReceipts]));
+        setCheckedSubjects([]);
       }
     }, 2000);
   };
 
   const getAmountDue = () => {
     if (payingInvoiceId) {
-      if (payingInvoiceId === 'EXAM-REG-SEM5') return 50;
       return invoices.find((i) => i.id === payingInvoiceId)?.amount || 0;
     }
     if (payingEventId) {
@@ -171,12 +202,14 @@ export default function PaymentsPage() {
     if (payingDonationId) {
       return donationAmount;
     }
+    if (payingExams) {
+      return checkedSubjects.length * 500;
+    }
     return 0;
   };
 
   const getNameDue = () => {
     if (payingInvoiceId) {
-      if (payingInvoiceId === 'EXAM-REG-SEM5') return 'Semester 5 Examinations Registration';
       return invoices.find((i) => i.id === payingInvoiceId)?.name || '';
     }
     if (payingEventId) {
@@ -185,13 +218,24 @@ export default function PaymentsPage() {
     if (payingDonationId) {
       return `Donation to ${donations.find((d) => d.id === payingDonationId)?.title}`;
     }
+    if (payingExams) {
+      return `Exam Registration (${checkedSubjects.length} subjects)`;
+    }
     return '';
   };
+
+  const handleToggleSubjectCheckbox = (code: string) => {
+    setCheckedSubjects(prev =>
+      prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code]
+    );
+  };
+
+  const allExamsRegistered = registeredSubjects.length === EXAM_SUBJECTS.length;
 
   return (
     <div className="space-y-6 relative">
       {/* 1. MOCK PAYMENT MODAL OVERLAY */}
-      {(payingInvoiceId || payingEventId || payingDonationId) && (
+      {(payingInvoiceId || payingEventId || payingDonationId || payingExams) && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-[#FAF6EE] dark:bg-[#131315] border border-[#E3D5BC] dark:border-white/10 rounded-3xl p-6 shadow-2xl text-[#1E1B24] dark:text-white space-y-6">
             {!paymentSuccess ? (
@@ -203,7 +247,7 @@ export default function PaymentsPage() {
                   <div>
                     <h3 className="font-display font-bold text-[16px]">Secure Checkout</h3>
                     <p className="text-[11px] font-mono text-[#5C5868]/70 dark:text-[#E4E2E4]/50">
-                      ID: {payingInvoiceId || payingEventId || payingDonationId}
+                      ID: {payingInvoiceId || payingEventId || payingDonationId || 'EXM-REG'}
                     </p>
                   </div>
                 </div>
@@ -215,15 +259,15 @@ export default function PaymentsPage() {
                   </div>
                   <div className="flex justify-between font-bold text-[#4A63C9] dark:text-[#B5C7E8]">
                     <span>Amount Due:</span>
-                    <span>${getAmountDue()}</span>
+                    <span>₹{getAmountDue()}</span>
                   </div>
                 </div>
 
                 {payingDonationId && (
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono uppercase text-[#5C5868]/80 dark:text-white/60">Customize Donation ($)</label>
+                    <label className="text-[10px] font-mono uppercase text-[#5C5868]/80 dark:text-white/60">Customize Donation (₹)</label>
                     <div className="flex gap-2">
-                      {[10, 25, 50, 100].map((amt) => (
+                      {[1000, 2500, 5000, 10000].map((amt) => (
                         <button
                           key={amt}
                           type="button"
@@ -234,7 +278,7 @@ export default function PaymentsPage() {
                               : 'border-[#E3D5BC]/50 bg-white/30 text-[#1E1B24] dark:text-white hover:bg-white/50'
                           }`}
                         >
-                          ${amt}
+                          ₹{amt}
                         </button>
                       ))}
                     </div>
@@ -266,6 +310,7 @@ export default function PaymentsPage() {
                       setPayingInvoiceId(null);
                       setPayingEventId(null);
                       setPayingDonationId(null);
+                      setPayingExams(false);
                     }}
                     className="flex-1 py-3 border border-[#E3D5BC] dark:border-white/10 text-[13px] font-semibold rounded-xl hover:bg-white/20 transition-all text-[#5C5868] dark:text-white"
                   >
@@ -298,6 +343,7 @@ export default function PaymentsPage() {
                     setPayingInvoiceId(null);
                     setPayingEventId(null);
                     setPayingDonationId(null);
+                    setPayingExams(false);
                   }}
                   className="w-full py-2.5 bg-[#1E1B24] dark:bg-white text-white dark:text-black font-semibold rounded-xl text-[13px]"
                 >
@@ -361,7 +407,7 @@ export default function PaymentsPage() {
                   </div>
                   <div className="flex items-center gap-5 sm:self-center shrink-0 w-full sm:w-auto justify-between sm:justify-end">
                     <span className="font-mono font-bold text-[18px] text-[#1E1B24] dark:text-white">
-                      ${inv.amount}
+                      ₹{inv.amount}
                     </span>
                     <button
                       onClick={() => handleOpenInvoicePayment(inv.id)}
@@ -397,7 +443,7 @@ export default function PaymentsPage() {
                     <Calendar className="w-3.5 h-3.5" /> Date: {evt.date}
                   </p>
                   <p className="flex items-center gap-2 font-bold text-[#1E1B24] dark:text-white">
-                    <Coins className="w-3.5 h-3.5" /> Fee: ${evt.amount}
+                    <Coins className="w-3.5 h-3.5" /> Fee: ₹{evt.amount}
                   </p>
                 </div>
               </div>
@@ -441,8 +487,8 @@ export default function PaymentsPage() {
                   
                   <div className="pt-2 space-y-1">
                     <div className="flex justify-between text-[11px] font-mono text-[#5C5868] dark:text-[#E4E2E4]/70">
-                      <span>Raised: ${don.raised}</span>
-                      <span>Goal: ${don.goal}</span>
+                      <span>Raised: ₹{don.raised}</span>
+                      <span>Goal: ₹{don.goal}</span>
                     </div>
                     <div className="h-1.5 w-full bg-[#E3D5BC]/30 dark:bg-white/5 rounded-full overflow-hidden">
                       <div className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full" style={{ width: `${progress}%` }} />
@@ -481,41 +527,81 @@ export default function PaymentsPage() {
               <span>Department:</span>
               <span>B.Tech Computer Science & Engineering</span>
             </div>
-            <div className="flex justify-between">
-              <span>Registration Status:</span>
-              <span className={examFeePaid ? 'text-[#2E8B5C] font-bold' : 'text-[#C1493D] font-bold'}>
-                {examFeePaid ? 'REGISTERED & ACTIVE' : 'PENDING FEE PAYMENT'}
-              </span>
-            </div>
-            <div className="flex justify-between border-t border-[#E3D5BC]/30 dark:border-white/5 pt-2 font-bold">
-              <span>Exam Registration Fee:</span>
-              <span>$50</span>
+            <div className="flex justify-between border-t border-[#E3D5BC]/20 dark:border-white/5 pt-2">
+              <span>Fee Per Subject:</span>
+              <span>₹500</span>
             </div>
           </div>
 
-          {examFeePaid ? (
+          {/* Subject registration checkboxes */}
+          <div className="space-y-3">
+            <h4 className="font-semibold text-[13.5px] text-[#1E1B24] dark:text-white">Subject Selection List</h4>
+            <div className="space-y-2">
+              {EXAM_SUBJECTS.map((sub) => {
+                const isRegistered = registeredSubjects.includes(sub.code);
+                const isChecked = checkedSubjects.includes(sub.code);
+                return (
+                  <label
+                    key={sub.code}
+                    className={`flex items-center justify-between p-3.5 rounded-xl border transition-all ${
+                      isRegistered
+                        ? 'bg-emerald-500/5 dark:bg-emerald-500/10 border-emerald-500/20 opacity-80 cursor-default'
+                        : 'bg-white/40 dark:bg-white/5 border-[#E3D5BC]/30 hover:bg-white/60 cursor-pointer'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={isRegistered || isChecked}
+                        disabled={isRegistered}
+                        onChange={() => handleToggleSubjectCheckbox(sub.code)}
+                        className="rounded border-[#E3D5BC] text-[#4A63C9] focus:ring-[#4A63C9]"
+                      />
+                      <div>
+                        <span className="text-[10px] font-mono font-bold text-[#4A63C9] bg-[#4A63C9]/10 px-2 py-0.5 rounded mr-2">
+                          {sub.code}
+                        </span>
+                        <span className="text-[13px] font-semibold text-[#1E1B24] dark:text-white">{sub.name}</span>
+                      </div>
+                    </div>
+                    <div>
+                      {isRegistered ? (
+                        <span className="text-[11px] font-mono font-bold text-[#2E8B5C]">Registered ✓</span>
+                      ) : (
+                        <span className="text-[11.5px] font-mono text-[#5C5868]">₹500</span>
+                      )}
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+
+          {allExamsRegistered ? (
             <div className="space-y-3.5">
               <div className="p-4 rounded-xl border border-[#2E8B5C]/20 bg-[#DFF3E8]/80 text-[#2E8B5C] text-[13px] font-medium flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 shrink-0" />
-                <span>Success! You have registered for your Semester End Exams. Your Hall Ticket has been generated.</span>
+                <span>Success! You have registered all your subjects for Semester End Exams. Your Hall Ticket has been generated.</span>
               </div>
               <button
-                onClick={() => alert('Hall Ticket pdf generated and saved to Documents Locker.')}
+                onClick={() => alert('Hall Ticket generated and saved to Documents Locker.')}
                 className="w-full py-3 bg-[#1E1B24] dark:bg-white text-white dark:text-black font-semibold rounded-xl text-[13px] flex items-center justify-center gap-1.5"
               >
                 <Download className="w-4 h-4" /> Download Exam Hall Ticket
               </button>
             </div>
           ) : (
-            <div className="space-y-3.5">
-              <p className="text-[12px] text-[#5C5868] dark:text-[#E4E2E4]/70 leading-normal">
-                Make a payment of **$50** to register for the final examinations. Clearing the registration fee automatically compiles your hall ticket and updates proctor authorizations.
-              </p>
+            <div className="space-y-3.5 pt-2">
+              <div className="flex justify-between items-center text-[13.5px] font-mono border-t border-[#E3D5BC]/30 dark:border-white/5 pt-3">
+                <span className="text-[#5C5868]/70 dark:text-[#E4E2E4]/60">Total Selected ({checkedSubjects.length} subjects):</span>
+                <span className="text-[18px] font-bold text-[#4A63C9] dark:text-[#B5C7E8]">₹{checkedSubjects.length * 500}</span>
+              </div>
               <button
                 onClick={handleOpenExamRegistrationPayment}
-                className="w-full py-3 bg-[#4A63C9] text-white text-[13px] font-bold rounded-xl hover:bg-[#3d54b3] shadow-md shadow-[#4A63C9]/15"
+                disabled={checkedSubjects.length === 0}
+                className="w-full py-3 bg-[#4A63C9] disabled:bg-zinc-300 dark:disabled:bg-zinc-800 disabled:cursor-not-allowed text-white text-[13px] font-bold rounded-xl hover:bg-[#3d54b3] shadow-md shadow-[#4A63C9]/15"
               >
-                Pay exam Fee & Register
+                Pay Exam Fees & Register
               </button>
             </div>
           )}

@@ -97,15 +97,15 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
   });
 
   const [invoices, setInvoices] = useState<Invoice[]>([
-    { id: 'INV-001', name: 'Semester 5 Tuition Fee', amount: 1200, dueDate: '2026-07-10', status: 'Pending' },
-    { id: 'INV-002', name: 'Examiner AI Premium Access', amount: 45, dueDate: '2026-06-30', status: 'Pending' },
-    { id: 'INV-003', name: 'Hostel Lodging Charges', amount: 450, dueDate: '2026-07-15', status: 'Pending' }
+    { id: 'INV-001', name: 'Semester 5 Tuition Fee', amount: 65000, dueDate: '2026-07-10', status: 'Pending' },
+    { id: 'INV-002', name: 'Academic Library Overdue Fine', amount: 350, dueDate: '2026-06-30', status: 'Pending' },
+    { id: 'INV-003', name: 'Hostel Lodging Charges', amount: 12000, dueDate: '2026-07-15', status: 'Pending' }
   ]);
 
   const [receipts, setReceipts] = useState<Receipt[]>([
-    { id: 'RCP-883', examName: 'Discrete Mathematics Final', dateCompleted: '2026-06-12', amount: 15, hash: '0x8892f392ea129dd94328ff9a', status: 'Graded/Completed/Cleared' },
-    { id: 'RCP-774', examName: 'Advanced Data Structures Mid', dateCompleted: '2026-05-18', amount: 15, hash: '0xab73d8e9ffc398ee827d091a', status: 'Graded/Completed/Cleared' },
-    { id: 'RCP-512', examName: 'Computational Logic Quiz 2', dateCompleted: '2026-05-02', amount: 10, hash: '0x49fec928a38ee9273c8d7912', status: 'Graded/Completed/Cleared' }
+    { id: 'RCP-883', examName: 'Discrete Mathematics Final', dateCompleted: '2026-06-12', amount: 1500, hash: '0x8892f392ea129dd94328ff9a', status: 'Graded/Completed/Cleared' },
+    { id: 'RCP-774', examName: 'Advanced Data Structures Mid', dateCompleted: '2026-05-18', amount: 1500, hash: '0xab73d8e9ffc398ee827d091a', status: 'Graded/Completed/Cleared' },
+    { id: 'RCP-512', examName: 'Computational Logic Quiz 2', dateCompleted: '2026-05-02', amount: 1000, hash: '0x49fec928a38ee9273c8d7912', status: 'Graded/Completed/Cleared' }
   ]);
 
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([
