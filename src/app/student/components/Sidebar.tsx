@@ -13,7 +13,7 @@ export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
 
   const navItems = [
-    { name: 'Command Center', href: '/student', icon: LayoutDashboard },
+    { name: 'Home', href: '/student', icon: LayoutDashboard },
     { name: 'Timetable', href: '/student/timetable', icon: CalendarRange },
     { name: 'Assignments & Submissions', href: '/student/assignments', icon: ClipboardList },
     { name: 'Study Materials', href: '/student/materials', icon: BookOpen },

@@ -243,34 +243,49 @@ export default function StudentDashboard() {
             </div>
           </div>
 
-          {/* Area Chart Progress */}
-          <div className="p-6 rounded-2xl bg-white/35 dark:bg-white/5 border border-white/40 dark:border-white/5">
-            <h3 className="font-display font-bold text-[16px] text-[#1E1B24] dark:text-white mb-5 flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-[#9C7FDB]" />
-              Academic Performance Trajectory
-            </h3>
-            <div className="h-56 w-full relative">
-              <svg className="w-full h-full overflow-visible" preserveAspectRatio="none">
-                <defs>
-                  <linearGradient id="performance-grad" x1="0%" x2="0%" y1="0%" y2="100%">
-                    <stop offset="0%" stopColor="#4A63C9" stopOpacity="0.25" />
-                    <stop offset="100%" stopColor="#4A63C9" stopOpacity="0.0" />
-                  </linearGradient>
-                </defs>
-                {/* simulated path */}
-                <path d="M0 160 Q 150 100 300 130 T 600 40 T 900 80 V 220 H 0 Z" fill="url(#performance-grad)" />
-                <path d="M0 160 Q 150 100 300 130 T 600 40 T 900 80" fill="none" stroke="#4A63C9" strokeWidth="2.5" />
-                
-                {/* Dots */}
-                <circle cx="0" cy="160" fill="#4A63C9" r="4" />
-                <circle cx="300" cy="130" fill="#4A63C9" r="4" />
-                <circle cx="600" cy="40" fill="#9C7FDB" r="5" className="animate-pulse" />
-              </svg>
-              <div className="absolute bottom-[-18px] left-0 right-0 flex justify-between text-[10px] font-mono text-[#5C5868]/70 dark:text-[#E4E2E4]/50 px-2">
-                <span>WEEK 1</span>
-                <span>WEEK 4 (MID)</span>
-                <span>WEEK 8</span>
-                <span>CURRENT</span>
+          {/* Bar Chart Progress */}
+          <div className="p-6 rounded-2xl bg-white/35 dark:bg-white/5 border border-white/40 dark:border-white/5 flex flex-col justify-between">
+            <div>
+              <h3 className="font-display font-bold text-[16px] text-[#1E1B24] dark:text-white mb-6 flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-[#9C7FDB]" />
+                Academic Performance Trajectory
+              </h3>
+              
+              <div className="flex items-end justify-between gap-3.5 h-48 pt-4 px-2">
+                {[
+                  { label: 'Week 1', value: 72, color: 'bg-[#4A63C9]/70 dark:bg-[#4A63C9]/60' },
+                  { label: 'Week 2', value: 78, color: 'bg-[#4A63C9]/70 dark:bg-[#4A63C9]/60' },
+                  { label: 'Week 3', value: 85, color: 'bg-[#4A63C9]/70 dark:bg-[#4A63C9]/60' },
+                  { label: 'Week 4 (Mid)', value: 82, color: 'bg-[#4A63C9] dark:bg-[#4A63C9]' },
+                  { label: 'Week 5', value: 88, color: 'bg-[#4A63C9]/70 dark:bg-[#4A63C9]/60' },
+                  { label: 'Week 6', value: 91, color: 'bg-[#4A63C9]/70 dark:bg-[#4A63C9]/60' },
+                  { label: 'Week 7', value: 94, color: 'bg-[#4A63C9]/70 dark:bg-[#4A63C9]/60' },
+                  { label: 'Current', value: 96, color: 'bg-[#9C7FDB]', pulse: true }
+                ].map((bar, idx) => (
+                  <div key={idx} className="flex-1 flex flex-col items-center gap-2 group h-full justify-end">
+                    <div className="relative w-full flex flex-col items-center justify-end h-full">
+                      {/* Hover Tooltip */}
+                      <span className="absolute -top-7 scale-0 group-hover:scale-100 transition-all duration-200 bg-[#1E1B24] dark:bg-[#EDEAF2] text-white dark:text-[#1E1B24] text-[9.5px] font-mono font-bold py-1 px-2 rounded shadow-lg z-10 whitespace-nowrap">
+                        {bar.value}%
+                      </span>
+                      
+                      {/* Bar fill */}
+                      <div
+                        style={{ height: `${bar.value}%` }}
+                        className={`w-full max-w-[28px] rounded-t-lg transition-all duration-500 ease-out relative group-hover:opacity-85 shadow-[0_4px_12px_rgba(74,99,201,0.15)] ${
+                          bar.color
+                        }`}
+                      >
+                        {bar.pulse && (
+                          <span className="absolute -top-1 left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-[#9C7FDB] border-2 border-white dark:border-[#1E1B24] animate-ping" />
+                        )}
+                      </div>
+                    </div>
+                    <span className="text-[9px] font-mono text-[#5C5868]/70 dark:text-[#E4E2E4]/50 uppercase text-center mt-1 truncate w-full">
+                      {bar.label}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

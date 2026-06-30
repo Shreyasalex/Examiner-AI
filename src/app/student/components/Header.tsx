@@ -86,7 +86,7 @@ export default function Header() {
       case '/student/help':
         return { title: 'Help & Support Desk', icon: HelpCircle, breadcrumbs: ['Help'] };
       default:
-        return { title: 'Command Center', icon: DashboardIcon, breadcrumbs: ['Overview'] };
+        return { title: 'Home', icon: DashboardIcon, breadcrumbs: ['Overview'] };
     }
   };
 
