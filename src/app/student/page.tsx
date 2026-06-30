@@ -340,7 +340,7 @@ export default function StudentDashboard() {
         {/* Right Column: AI Chat & Radar Charts */}
         <div className="lg:col-span-5 space-y-6">
           {/* AI Copilot Panel */}
-          <div className="rounded-2xl border border-white/40 dark:border-white/5 bg-white/35 dark:bg-white/5 overflow-hidden flex flex-col h-[420px]">
+          <div className="rounded-2xl border border-white/40 dark:border-white/5 bg-white/35 dark:bg-white/5 overflow-hidden flex flex-col h-[560px]">
             {/* Copilot Header */}
             <div className="p-4 bg-gradient-to-r from-[#9C7FDB]/10 via-[#4A63C9]/10 to-transparent border-b border-[#E3D5BC]/30 dark:border-white/5 flex items-center gap-3">
               <div className="w-2.5 h-2.5 rounded-full bg-[#9C7FDB] animate-pulse" />
@@ -397,43 +397,6 @@ export default function StudentDashboard() {
                 <Send className="w-4 h-4" />
               </button>
             </form>
-          </div>
-
-          {/* Radar Mastery chart */}
-          <div className="p-6 rounded-2xl bg-white/35 dark:bg-white/5 border border-white/40 dark:border-white/5">
-            <h3 className="font-mono text-[11px] uppercase tracking-wider text-[#5C5868]/70 dark:text-[#E4E2E4]/50 font-bold text-center mb-5">
-              Bloom&apos;s Taxonomy Mastery
-            </h3>
-            <div className="aspect-square w-full max-w-[280px] mx-auto relative flex items-center justify-center">
-              {/* Radar chart simulation using SVGs */}
-              <svg className="w-full h-full drop-shadow-md overflow-visible" viewBox="0 0 100 100">
-                {/* Background polygons */}
-                <polygon fill="none" points="50,10 90,40 75,90 25,90 10,40" stroke="currentColor" className="text-[#E3D5BC]/30 dark:text-white/5" strokeWidth="1" />
-                <polygon fill="none" points="50,25 80,47 69,80 31,80 20,47" stroke="currentColor" className="text-[#E3D5BC]/30 dark:text-white/5" strokeWidth="1" />
-                <polygon fill="none" points="50,40 70,55 63,70 37,70 30,55" stroke="currentColor" className="text-[#E3D5BC]/30 dark:text-white/5" strokeWidth="1" />
-                
-                {/* Axes */}
-                <line stroke="currentColor" className="text-[#E3D5BC]/30 dark:text-white/5" strokeWidth="0.7" x1="50" y1="50" x2="50" y2="10" />
-                <line stroke="currentColor" className="text-[#E3D5BC]/30 dark:text-white/5" strokeWidth="0.7" x1="50" y1="50" x2="90" y2="40" />
-                <line stroke="currentColor" className="text-[#E3D5BC]/30 dark:text-white/5" strokeWidth="0.7" x1="50" y1="50" x2="75" y2="90" />
-                <line stroke="currentColor" className="text-[#E3D5BC]/30 dark:text-white/5" strokeWidth="0.7" x1="50" y1="50" x2="25" y2="90" />
-                <line stroke="currentColor" className="text-[#E3D5BC]/30 dark:text-white/5" strokeWidth="0.7" x1="50" y1="50" x2="10" y2="40" />
-
-                {/* Simulated mastery line */}
-                <polygon
-                  fill="rgba(156, 127, 219, 0.15)"
-                  points="50,22 84,43 70,82 32,78 18,36"
-                  stroke="#9C7FDB"
-                  strokeWidth="1.8"
-                  className="animate-pulse"
-                />
-              </svg>
-              {/* labels */}
-              <div className="absolute top-[-8px] text-[8.5px] font-mono font-bold text-[#5C5868]/70 dark:text-[#E4E2E4]/60">CREATE</div>
-              <div className="absolute bottom-[-8px] text-[8.5px] font-mono font-bold text-[#5C5868]/70 dark:text-[#E4E2E4]/60">REMEMBER</div>
-              <div className="absolute left-[-22px] top-[40%] text-[8.5px] font-mono font-bold text-[#5C5868]/70 dark:text-[#E4E2E4]/60 -rotate-90">ANALYZE</div>
-              <div className="absolute right-[-14px] top-[40%] text-[8.5px] font-mono font-bold text-[#5C5868]/70 dark:text-[#E4E2E4]/60 rotate-90">APPLY</div>
-            </div>
           </div>
         </div>
       </div>
