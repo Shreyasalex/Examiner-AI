@@ -243,53 +243,6 @@ export default function StudentDashboard() {
             </div>
           </div>
 
-          {/* Bar Chart Progress */}
-          <div className="p-6 rounded-2xl bg-white/35 dark:bg-white/5 border border-white/40 dark:border-white/5 flex flex-col justify-between">
-            <div>
-              <h3 className="font-display font-bold text-[16px] text-[#1E1B24] dark:text-white mb-6 flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-[#9C7FDB]" />
-                Academic Performance Trajectory
-              </h3>
-              
-              <div className="flex items-end justify-between gap-3.5 h-48 pt-4 px-2">
-                {[
-                  { label: 'Week 1', value: 72, color: 'bg-[#4A63C9]/70 dark:bg-[#4A63C9]/60' },
-                  { label: 'Week 2', value: 78, color: 'bg-[#4A63C9]/70 dark:bg-[#4A63C9]/60' },
-                  { label: 'Week 3', value: 85, color: 'bg-[#4A63C9]/70 dark:bg-[#4A63C9]/60' },
-                  { label: 'Week 4 (Mid)', value: 82, color: 'bg-[#4A63C9] dark:bg-[#4A63C9]' },
-                  { label: 'Week 5', value: 88, color: 'bg-[#4A63C9]/70 dark:bg-[#4A63C9]/60' },
-                  { label: 'Week 6', value: 91, color: 'bg-[#4A63C9]/70 dark:bg-[#4A63C9]/60' },
-                  { label: 'Week 7', value: 94, color: 'bg-[#4A63C9]/70 dark:bg-[#4A63C9]/60' },
-                  { label: 'Current', value: 96, color: 'bg-[#9C7FDB]', pulse: true }
-                ].map((bar, idx) => (
-                  <div key={idx} className="flex-1 flex flex-col items-center gap-2 group h-full justify-end">
-                    <div className="relative w-full flex flex-col items-center justify-end h-full">
-                      {/* Hover Tooltip */}
-                      <span className="absolute -top-7 scale-0 group-hover:scale-100 transition-all duration-200 bg-[#1E1B24] dark:bg-[#EDEAF2] text-white dark:text-[#1E1B24] text-[9.5px] font-mono font-bold py-1 px-2 rounded shadow-lg z-10 whitespace-nowrap">
-                        {bar.value}%
-                      </span>
-                      
-                      {/* Bar fill */}
-                      <div
-                        style={{ height: `${bar.value}%` }}
-                        className={`w-full max-w-[28px] rounded-t-lg transition-all duration-500 ease-out relative group-hover:opacity-85 shadow-[0_4px_12px_rgba(74,99,201,0.15)] ${
-                          bar.color
-                        }`}
-                      >
-                        {bar.pulse && (
-                          <span className="absolute -top-1 left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-[#9C7FDB] border-2 border-white dark:border-[#1E1B24] animate-ping" />
-                        )}
-                      </div>
-                    </div>
-                    <span className="text-[9px] font-mono text-[#5C5868]/70 dark:text-[#E4E2E4]/50 uppercase text-center mt-1 truncate w-full">
-                      {bar.label}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
           {/* Recent results & feedbacks */}
           <div className="p-6 rounded-2xl bg-white/35 dark:bg-white/5 border border-white/40 dark:border-white/5">
             <h3 className="font-display font-bold text-[16px] text-[#1E1B24] dark:text-white mb-5">
@@ -340,7 +293,7 @@ export default function StudentDashboard() {
         {/* Right Column: AI Chat & Radar Charts */}
         <div className="lg:col-span-5 space-y-6">
           {/* AI Copilot Panel */}
-          <div className="rounded-2xl border border-white/40 dark:border-white/5 bg-white/35 dark:bg-white/5 overflow-hidden flex flex-col h-[560px]">
+          <div className="rounded-2xl border border-white/40 dark:border-white/5 bg-white/35 dark:bg-white/5 overflow-hidden flex flex-col h-[420px]">
             {/* Copilot Header */}
             <div className="p-4 bg-gradient-to-r from-[#9C7FDB]/10 via-[#4A63C9]/10 to-transparent border-b border-[#E3D5BC]/30 dark:border-white/5 flex items-center gap-3">
               <div className="w-2.5 h-2.5 rounded-full bg-[#9C7FDB] animate-pulse" />
